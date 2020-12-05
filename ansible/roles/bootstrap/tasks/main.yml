@@ -1,0 +1,17 @@
+- name: "bootstrap | install prerequisites"
+  apt:
+    name:
+    - python3
+    - python3-pip
+    - python3-apt
+    - apt-transport-https
+    - ca-certificates
+    - curl
+    - rsync
+    - software-properties-common
+    update_cache: yes
+  become: yes
+  retries: 10
+  delay: 5
+  register: apt_packages
+  until: apt_packages is not failed

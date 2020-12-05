@@ -1,0 +1,93 @@
+- name: "docker | check docker does exists"
+  command: /usr/bin/env docker
+  register: docker_exists
+  ignore_errors: yes
+  changed_when: docker_exists.rc != 0
+
+- name: "docker | install docker requirements"
+  apt:
+    name:
+    - python-pip
+    - apt-transport-https
+    - ca-certificates
+    - curl
+    - rsync
+    - software-properties-common
+    update_cache: yes
+  become: yes
+  retries: 10
+  delay: 5
+  register: apt_packages
+  until: apt_packages is not failed
+
+- name: "docker | register docker gpg key"  # noqa 303 306
+  shell: "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -"
+  become: yes
+  when: docker_exists.rc != 0
+  retries: 10
+  delay: 5
+  register: gpg_key_registration
+  until: gpg_key_registration is not failed
+
+- name: "docker | add docker apt repository"
+  apt_repository:
+    repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+    filename: docker-ce
+  become: yes
+  when: docker_exists.rc != 0
+
+- name: "docker | prepare docker daemon directory"
+  become: yes
+  file:
+    path: /etc/docker/
+    state: directory
+
+- name: "docker | prepare docker daemon configuration"
+  become: yes
+  copy:
+    content: "{{ docker_config | to_json }}"
+    dest: /etc/docker/daemon.json
+  vars:
+    docker_config:
+      # simple docker daemon configuration
+      # TODO: docker_config can be configured by user
+      bip: 10.251.10.1/24
+      'default-address-pools':
+      - base: 10.251.0.1/16
+        size : 24
+      'log-opts':
+        'max-size': 50m
+  register: docker_config_install
+
+- name: "docker | reload daemon if configuration has changed"
+  systemd:
+    name: docker.service
+    state: reloaded
+  become: yes
+  when:
+  - docker_exists.rc == 0
+  - docker_config_install.changed
+
+- name: "docker | install docker-ce"
+  apt:
+    name: docker-ce
+    update_cache: yes
+  become: yes
+  when: docker_exists.rc != 0
+  retries: 10
+  delay: 5
+  register: apt_docker
+  until: apt_docker is not failed
+
+- name: "docker | install docker-py"
+  pip:
+    name:
+    - pip
+    - docker==3.1.3
+    - docker-compose==1.24.1
+    extra_args: --no-cache-dir
+  retries: 10
+  delay: 5
+  register: docker_pip
+  until: docker_pip is not failed
+  become: yes

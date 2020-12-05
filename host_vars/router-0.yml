@@ -1,0 +1,4 @@
+bgp:
+  debug: true
+  asn: 65001
+  ipv4_address: "{{ ansible_ssh_host }}"

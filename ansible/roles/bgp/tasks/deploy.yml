@@ -1,0 +1,10 @@
+- name: bgp | start bird-router container
+  become: yes
+  docker_container:
+    image: bird-router
+    name: bird-router
+    network_mode: host
+    volumes:
+    - /opt/containers/bird/bird.conf:/etc/bird/bird.conf
+    restart: "{{ config.changed | default(false) }}"
+    recreate: "{{ container_image.changed | default(false) }}"

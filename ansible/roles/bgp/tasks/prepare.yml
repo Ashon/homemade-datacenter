@@ -1,0 +1,18 @@
+- name: bgp | copy bird2-router container to host
+  become: yes
+  copy:
+    src: ./build/bird-router.container
+    dest: /tmp/bird-router.container
+  register: copy_container
+
+- name: bgp | check bird router container
+  become: yes
+  shell: docker images bird-router | grep bird-router
+  register: container_image
+  changed_when: container_image.rc == 1
+  failed_when: container_image.rc not in (0, 1)
+
+- name: bgp | load container to docker
+  become: yes
+  shell: docker load --input /tmp/bird-router.container
+  when: copy_container.changed or container_image.changed

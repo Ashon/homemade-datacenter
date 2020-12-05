@@ -2,3 +2,5 @@
 *.log
 .python-version
 .vagrant
+
+build

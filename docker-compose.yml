@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  bird-router:
+    image: bird-router
+    build:
+      context: containers/bird
+    network_mode: host
+    volumes:
+    - ./bird.conf:/etc/bird/bird.conf

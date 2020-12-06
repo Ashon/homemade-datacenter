@@ -29,6 +29,8 @@ Vagrant.configure('2') do |config|
       config.vm.provider 'virtualbox' do |vb|
         vb.cpus = '1'
         vb.memory = '1024'
+        vb.customize ['modifyvm', :id, '--nested-hw-virt', 'on']
+        vb.customize ['modifyvm', :id, '--cpuexecutioncap', '70']
       end
     end
   end

@@ -6,5 +6,6 @@
     network_mode: host
     volumes:
     - /opt/containers/bird/bird.conf:/etc/bird/bird.conf
+    restart_policy: always
     restart: "{{ config.changed | default(false) }}"
     recreate: "{{ container_image.changed | default(false) }}"

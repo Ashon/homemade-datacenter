@@ -1,0 +1,85 @@
+router id {{ bgp.ipv4_address }};
+
+{% if bgp.debug %}
+debug protocols all;
+{% else %}
+debug protocols { events, states };
+{% endif %}
+
+protocol device {
+  interface "{{ bgp.iface }}";
+}
+
+protocol direct {
+  disabled;
+}
+
+protocol kernel {
+  persist;
+  ipv4 {
+    export all;
+  };
+}
+
+protocol static {
+  ipv4;     # Again, IPv4 channel with default options
+
+#   route 0.0.0.0/0 via 198.51.100.10;
+#   route 192.0.2.0/24 blackhole;
+#   route 10.0.0.0/8 unreachable;
+#   route 10.2.0.0/24 via "eth0";
+#   # Static routes can be defined with optional attributes
+#   route 10.1.1.0/24 via 198.51.100.3 { rip_metric = 3; };
+#   route 10.1.2.0/24 via 198.51.100.3 { ospf_metric1 = 100; };
+#   route 10.1.3.0/24 via 198.51.100.4 { ospf_metric2 = 100; };
+}
+
+{% if ibgp.get('uplink') %}
+filter rt_import {
+  if bgp_path.first != 64496 then accept;
+  if bgp_path.len > 64 then accept;
+  if bgp_next_hop != from then accept;
+  reject;
+}
+
+protocol bgp uplink0 {
+  description "BGP uplink";
+
+  local {{ bgp.ipv4_address }} as {{ ibgp.asn }};
+  neighbor {{ ibgp.uplink.ipv4_address }} as {{ ibgp.uplink.asn }};
+
+  hold time 90;
+  password "{{ ibgp.uplink.password }}";
+
+  ipv4 {
+    import filter rt_import;
+    export where source ~ [ RTS_STATIC, RTS_BGP ];
+  };
+}
+{% endif %}
+
+{% if groups['routers'] | length > 1 %}
+template bgp rr_clients {
+  local {{ bgp.ipv4_address }} as {{ ibgp.asn }};
+  neighbor as {{ ibgp.asn }};
+  rr client;
+  rr cluster id 1.0.0.1;
+
+  ipv4 {
+    import all;
+    export where source = RTS_BGP;
+  };
+
+  ipv6 {
+    import all;
+    export where source = RTS_BGP;
+  };
+}
+
+{% for host in groups['routers'] | difference(inventory_hostname) %}
+protocol bgp client{{ loop.index }} from rr_clients {
+  description "{{ host }}";
+  neighbor {{ hostvars[host].bgp.ipv4_address }};
+}
+{% endfor %}
+{% endif %}

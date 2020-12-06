@@ -1,8 +1,8 @@
 - name: "docker | check docker does exists"
   command: /usr/bin/env docker
   register: docker_exists
-  ignore_errors: yes
   changed_when: docker_exists.rc != 0
+  failed_when: docker_exists.rc not in (0, 127)
 
 - name: "docker | install docker requirements"
   apt:

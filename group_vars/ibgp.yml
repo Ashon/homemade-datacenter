@@ -1,3 +1,7 @@
 ibgp:
   asn: 65000
   route_cidr: 172.19.0.0/16
+  uplink:
+    ipv4_address: 192.168.60.1
+    asn: 65001
+    password: secret

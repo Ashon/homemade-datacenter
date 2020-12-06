@@ -27,7 +27,7 @@ debug protocols { events, states };
 
 # You can define your own constants
 
-define my_asn = {{ bgp.asn }};
+define my_asn = {{ ibgp.asn }};
 define my_addr = {{ bgp.ipv4_address }};
 
 # Tables master4 and master6 are defined by default
@@ -177,32 +177,28 @@ protocol static {
 #       };
 #}
 
-# Template example. Using templates to define IBGP route reflector clients.
-# template bgp rr_clients {
-#       local 10.0.0.1 as 65000;
-#       neighbor as 65000;
-#       rr client;
-#       rr cluster id 1.0.0.1;
-#
-#       ipv4 {
-#               import all;
-#               export where source = RTS_BGP;
-#       };
-#
-#       ipv6 {
-#               import all;
-#               export where source = RTS_BGP;
-#       };
-# }
-#
-# protocol bgp client1 from rr_clients {
-#       neighbor 10.0.1.1;
-# }
-#
-# protocol bgp client2 from rr_clients {
-#       neighbor 10.0.2.1;
-# }
-#
-# protocol bgp client3 from rr_clients {
-#       neighbor 10.0.3.1;
-# }
+{% if groups['routers'] | length > 1 %}
+# Route Reflector Configurations
+template bgp rr_clients {
+      local {{ bgp.ipv4_address }} as {{ ibgp.asn }};
+      neighbor as {{ ibgp.asn }};
+      rr client;
+      rr cluster id 1.0.0.1;
+
+      ipv4 {
+              import all;
+              export where source = RTS_BGP;
+      };
+
+      ipv6 {
+              import all;
+              export where source = RTS_BGP;
+      };
+}
+
+{% for host in groups['routers'] | difference(inventory_hostname) %}
+protocol bgp client{{ loop.index }} from rr_clients {
+      neighbor {{ hostvars[host].bgp.ipv4_address }};
+}
+{% endfor %}
+{% endif %}

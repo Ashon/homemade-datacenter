@@ -1,3 +1,7 @@
-- hosts: routers
+- hosts: vpc:&spine
   roles:
-  - bgp/reflector
+  - bgp/spine
+
+- hosts: vpc:&leaf
+  roles:
+  - bgp/leaf

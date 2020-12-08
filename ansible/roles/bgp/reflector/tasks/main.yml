@@ -1,3 +1,0 @@
-- include_tasks: prepare.yml
-- include_tasks: config.yml
-- include_tasks: deploy.yml

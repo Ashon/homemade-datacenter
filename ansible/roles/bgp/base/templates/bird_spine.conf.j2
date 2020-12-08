@@ -1,0 +1,90 @@
+{% include 'bird_base.conf.j2' %}
+
+protocol kernel {
+  scan time 5;
+
+  persist;
+  graceful restart;
+
+  ipv4 {
+    export all;
+  };
+}
+
+protocol static {
+  ipv4;
+{% for leaf in groups['leaf'] %}
+  route {{ ibgp.route_cidr }} via {{ hostvars[leaf].bgp.ipv4_address }};
+{% endfor %}
+}
+
+{% if bgp.get('uplinks') %}
+template bgp uplink {
+  local {{ bgp.ipv4_address }} as {{ ibgp.asn }};
+
+  hold time 90;
+
+  ipv4 {
+    import filter {reject;};
+    export filter {
+      if net ~ [{{ ibgp.route_cidr}}] then accept;
+      reject;
+    };
+  };
+}
+{% for uplink in bgp.uplinks %}
+protocol bgp uplink{{ loop.index}} from uplink {
+  description "BGP uplink {{ loop.index }}";
+  neighbor {{ uplink.ipv4_address }} as {{ uplink.asn }};
+  password "{{ uplink.password }}";
+}
+{% endfor %}
+{% endif %}
+
+{% if groups['leaf'] %}
+template bgp leaf {
+  local {{ bgp.ipv4_address }} as {{ ibgp.asn }};
+  neighbor as {{ ibgp.asn }};
+
+  hold time 90;
+  password "{{ ibgp.password }}";
+}
+{% for leaf in groups['leaf'] %}
+protocol bgp leaf{{ loop.index }} from leaf {
+  neighbor {{ hostvars[leaf].bgp.ipv4_address }};
+  ipv4 {
+    import filter {
+      gw = {{ hostvars[leaf].bgp.ipv4_address }};
+      accept;
+    };
+  };
+}
+{% endfor %}
+{% endif %}
+
+{% if groups['spine'] | length > 1 %}
+template bgp rr_clients {
+  local {{ bgp.ipv4_address }} as {{ ibgp.asn }};
+  neighbor as {{ ibgp.asn }};
+  rr client;
+  rr cluster id 1.0.0.1;
+
+  source address {{ bgp.ipv4_address }};
+
+  ipv4 {
+    import all;
+    export where source = RTS_BGP;
+  };
+
+  ipv6 {
+    import all;
+    export where source = RTS_BGP;
+  };
+}
+{% for host in groups['spine'] | difference(inventory_hostname) %}
+protocol bgp rr{{ loop.index }} from rr_clients {
+  description "{{ host }}";
+  neighbor {{ hostvars[host].bgp.ipv4_address }};
+}
+{% endfor %}
+{% endif %}

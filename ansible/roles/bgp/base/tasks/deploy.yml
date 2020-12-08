@@ -3,6 +3,8 @@
   docker_container:
     image: bird-router
     name: bird-router
+    capabilities:
+    - NET_ADMIN
     network_mode: host
     volumes:
     - /opt/containers/bird/bird.conf:/etc/bird/bird.conf

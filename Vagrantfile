@@ -10,7 +10,7 @@ hosts = [
   'machine-2',
 ]
 
-image = 'ubuntu/bionic64'
+image = 'generic/ubuntu1804'
 subnet = '192.168.60'
 ip_starts = 11
 
@@ -23,14 +23,12 @@ Vagrant.configure('2') do |config|
 
       node.vm.hostname = host
       node.vm.network 'private_network', ip: host_ip
-      #node.ssh.host = host_ip
-      #node.ssh.port = 22
 
       config.vm.provider 'virtualbox' do |vb|
         vb.cpus = '1'
         vb.memory = '1024'
         vb.customize ['modifyvm', :id, '--nested-hw-virt', 'on']
-        vb.customize ['modifyvm', :id, '--cpuexecutioncap', '70']
+        vb.customize ['modifyvm', :id, '--cpuexecutioncap', '50']
       end
     end
   end

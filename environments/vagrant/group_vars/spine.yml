@@ -1,0 +1,8 @@
+bgp:
+  debug: true
+  iface: eth1
+  ipv4_address: "{{ ansible_ssh_host }}"
+  uplinks:
+  - ipv4_address: 192.168.60.1
+    asn: 65001
+    password: secret

@@ -21,9 +21,7 @@ protocol static {
 {% if bgp.get('uplinks') %}
 template bgp uplink {
   local {{ bgp.ipv4_address }} as {{ ibgp.asn }};
-
   hold time 90;
-
   ipv4 {
     import filter {reject;};
     export filter {
@@ -45,7 +43,6 @@ protocol bgp uplink{{ loop.index}} from uplink {
 template bgp leaf {
   local {{ bgp.ipv4_address }} as {{ ibgp.asn }};
   neighbor as {{ ibgp.asn }};
-
   hold time 90;
   password "{{ ibgp.password }}";
 }

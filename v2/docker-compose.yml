@@ -1,63 +1,77 @@
 version: '3'
 
+networks:
+  management:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      - subnet: 10.10.0.0/24
+
 services:
+  mgmt: &bird
+    container_name: mgmt
+    image: mgmt
+    build:
+      context: containers/mgmt
+    networks:
+    - management
+    hostname: mgmt
+    command: sh -c 'while true; do sleep 1; done'
+    
   edge-0: &router
-    container_name: edge-0
     image: bird-router
     build:
       context: containers/bird
-    # start from none
-    network_mode: none
+    networks:
+    - management
+    container_name: edge-0
     hostname: edge-0
-    mac_address: 0A:00:0F:00:00:01
-    volumes:
-    - ./configs/bird.conf:/etc/bird/bird.conf
   edge-1:
     <<: *router
     container_name: edge-1
     hostname: edge-1
-    mac_address: 0A:00:0F:00:00:02
 
   spine-0:
     <<: *router
     container_name: spine-0
     hostname: spine-0
-    mac_address: 0A:00:0F:00:00:03
   spine-1:
     <<: *router
     container_name: spine-1
     hostname: spine-1
-    mac_address: 0A:00:0F:00:00:04
+  spine-2:
+    <<: *router
+    container_name: spine-2
+    hostname: spine-2
+  spine-3:
+    <<: *router
+    container_name: spine-3
+    hostname: spine-3
 
   leaf-0:
     <<: *router
     container_name: leaf-0
     hostname: leaf-0
-    mac_address: 0A:00:0F:00:00:05
   leaf-1:
     <<: *router
     container_name: leaf-1
     hostname: leaf-1
-    mac_address: 0A:00:0F:00:00:06
 
   leaf-2:
     <<: *router
     container_name: leaf-2
     hostname: leaf-2
-    mac_address: 0A:00:0F:00:00:07
   leaf-3:
     <<: *router
     container_name: leaf-3
     hostname: leaf-3
-    mac_address: 0A:00:0F:00:00:08
 
   leaf-4:
     <<: *router
     container_name: leaf-4
     hostname: leaf-4
-    mac_address: 0A:00:0F:00:00:09
   leaf-5:
     <<: *router
     container_name: leaf-5
     hostname: leaf-5
-    mac_address: 0A:00:0F:00:00:0a

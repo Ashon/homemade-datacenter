@@ -1,0 +1,20 @@
+- name: gather mac tables
+  delegate_to: localhost
+  become: yes
+  shell: |
+    ip netns exec {{ item }} \
+      ip link show dev {{ inventory_hostname }} | grep link/ether | awk '{print $2}'
+  loop: "{{ groups[peer_group] + (groups[downlink_group] | omit) + (groups[uplink_group] | omit) }}"
+  register: bridge_mac
+  when: inventory_hostname != item
+
+- name: add static arp table
+  delegate_to: localhost
+  become: yes 
+  shell: |
+    ip netns exec {{ inventory_hostname }} \
+      arp -s {{ hostvars[item.item].bgp_ip }} {{ item.stdout }}
+  loop: "{{ bridge_mac.results }}"
+  loop_control:
+    label: "{{ item.item }} - {{ item.get('stdout', '') }}"
+  when: inventory_hostname != item.item

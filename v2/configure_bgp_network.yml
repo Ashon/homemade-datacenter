@@ -1,0 +1,29 @@
+- hosts: edge
+  tasks:
+  - include_tasks: tasks/peer_link.yml
+    vars:
+      peer_group: edge 
+  - include_tasks: tasks/link_hosts.yml
+    vars:
+      host_from: "{{ inventory_hostname }}"
+      host_to: "{{ item }}"
+    loop: "{{ groups['spine'] }}"
+
+- hosts: spine
+  tasks:
+  - include_tasks: tasks/peer_link.yml
+    vars:
+      peer_group: spine
+  - include_tasks: tasks/link_hosts.yml
+    vars:
+      host_from: "{{ inventory_hostname }}"
+      host_to: "{{ item }}"
+    loop: "{{ groups['edge'] + groups['leaf'] }}"
+
+- hosts: leaf
+  tasks:
+  - include_tasks: tasks/link_hosts.yml
+    vars:
+      host_from: "{{ inventory_hostname }}"
+      host_to: "{{ item }}"
+    loop: "{{ groups['spine'] }}"

@@ -1,0 +1,16 @@
+- hosts: all
+  tasks:
+  - block:
+    - name: Get container namespaces
+      shell: "docker inspect {{ inventory_hostname }} -f '{% raw %}{{ .NetworkSettings.SandboxKey }}{% endraw %}'"
+      register: container_netns
+      changed_when: false
+
+    - name: Link container netns to host
+      become: yes
+      file:
+        src: "{{ container_netns.stdout }}"
+        dest: "/var/run/netns/{{ inventory_hostname }}"
+        state: link
+
+    delegate_to: localhost

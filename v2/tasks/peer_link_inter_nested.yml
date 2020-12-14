@@ -1,0 +1,4 @@
+- include_tasks: link_hosts.yml
+  when:
+  - host_from != host_to 
+  run_once: yes

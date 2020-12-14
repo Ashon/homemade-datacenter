@@ -1,0 +1,40 @@
+- name: Check for veth pairs
+  become: yes
+  delegate_to: localhost
+  shell: |
+    set -euo pipefail
+
+    ip netns exec {{ host_from }} ip link show {{ host_to }}
+    ip netns exec {{ host_to }} ip link show {{ host_from }}
+  args:
+    executable: /bin/bash
+  failed_when: false
+  changed_when: veth_exists.rc == 1
+  register: veth_exists
+
+- name: Link hosts
+  become: yes
+  delegate_to: localhost
+  shell: |
+    set -euo pipefail
+
+    # 2. Create veth pair
+    ip link add \
+      name {{ host_to }} \
+      netns {{ host_from }} \
+    type veth peer \
+      name {{ host_from }} \
+      netns {{ host_to }}
+
+    # 3. Up devices
+    ip netns exec {{ host_from }} ip link set dev {{ host_to }} up
+    ip netns exec {{ host_from }} ip addr add {{ hostvars[host_from].bgp_ip }}/32 dev {{ host_to }}
+    ip netns exec {{ host_to }} ip link set dev {{ host_from }} up
+    ip netns exec {{ host_to }} ip addr add {{ hostvars[host_to].bgp_ip }}/32 dev {{ host_from }}
+
+    # 4. add static route rule
+    ip netns exec {{ host_from }} ip route add {{ hostvars[host_to].bgp_ip }}/32 dev {{ host_to }}
+    ip netns exec {{ host_to }} ip route add {{ hostvars[host_from].bgp_ip }}/32 dev {{ host_from }}
+  args:
+    executable: /bin/bash
+  when: veth_exists.changed

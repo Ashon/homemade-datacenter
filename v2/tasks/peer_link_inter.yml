@@ -1,0 +1,9 @@
+- include_tasks: peer_link_inter_nested.yml
+  loop: "{{ _footprints }}"
+  loop_control:
+    loop_var: host_to
+
+- name: Pop host from _footprints
+  set_fact:
+    _footprints: "{{ _footprints | difference([host_from]) }}"
+  run_once: yes

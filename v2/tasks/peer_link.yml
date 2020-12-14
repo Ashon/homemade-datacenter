@@ -1,0 +1,10 @@
+- name: Facts for _footprints
+  set_fact:
+    _footprints: "{{ groups[peer_group] }}"
+  when: not _footprints|default(false)
+  run_once: yes
+
+- include_tasks: peer_link_inter.yml
+  loop: "{{ groups[peer_group] }}"
+  loop_control:
+    loop_var: host_from

@@ -7,6 +7,7 @@ RUN rm -f /etc/dpkg/dpkg.cfg.d/excludes && \
         iputils-ping \
         iproute2 \
         net-tools \
+        tcpdump \
         bird2
 
 RUN mkdir /var/lib/bird /run/bird

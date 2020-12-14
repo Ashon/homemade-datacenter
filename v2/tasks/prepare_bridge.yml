@@ -1,0 +1,29 @@
+- name: Check for network node bridge interface
+  become: yes
+  delegate_to: localhost
+  shell: |
+    set -euo pipefail
+    ip netns exec {{ inventory_hostname }} ip link show br0
+  args:
+    executable: /bin/bash
+  failed_when: false
+  changed_when: bridge_exists.rc == 1
+  register: bridge_exists
+
+- name: Setup Bridge interface
+  become: yes
+  delegate_to: localhost
+  shell: |
+    set -euo pipefail
+
+    # 1. Create bridge interface for network node
+    ip netns exec {{ inventory_hostname }} ip link add \
+      name br0 \
+      address {{ mac }} \
+      type bridge
+    ip netns exec {{ inventory_hostname }} ip link set dev br0 up
+    ip netns exec {{ inventory_hostname }} ip link set br0 promisc on
+    #ip netns exec {{ inventory_hostname }} ip addr add {{ bgp_ip }} dev br0
+  args:
+    executable: /bin/bash
+  when: bridge_exists.changed

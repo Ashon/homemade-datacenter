@@ -28,9 +28,7 @@
 
     # 3. Up devices
     ip netns exec {{ host_from }} ip link set dev {{ host_to }} up
-    ip netns exec {{ host_from }} ip addr add {{ hostvars[host_from].bgp_ip }}/32 dev {{ host_to }}
     ip netns exec {{ host_to }} ip link set dev {{ host_from }} up
-    ip netns exec {{ host_to }} ip addr add {{ hostvars[host_to].bgp_ip }}/32 dev {{ host_from }}
 
     # 4. add static route rule
     ip netns exec {{ host_from }} ip route add {{ hostvars[host_to].bgp_ip }}/32 dev {{ host_to }}

@@ -1,32 +1,14 @@
 version: '3'
 
-networks:
-  management:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-      - subnet: 10.10.0.0/24
-
 services:
-  mgmt: &bird
-    container_name: mgmt
-    image: mgmt
-    build:
-      context: containers/mgmt
-    networks:
-    - management
-    hostname: mgmt
-    command: sh -c 'while true; do sleep 1; done'
-    
   edge-0: &router
     image: bird-router
     build:
       context: containers/bird
-    networks:
-    - management
+    network_mode: none
     container_name: edge-0
     hostname: edge-0
+    command: sh -c 'while true; do sleep 10; done'
   edge-1:
     <<: *router
     container_name: edge-1

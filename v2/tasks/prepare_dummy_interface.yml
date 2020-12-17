@@ -1,0 +1,27 @@
+- name: Check for network node dummy interface
+  become: yes
+  delegate_to: localhost
+  shell: |
+    set -euo pipefail
+    ip netns exec {{ inventory_hostname }} ip link show dummy
+  args:
+    executable: /bin/bash
+  failed_when: false
+  changed_when: dummy_exists.rc == 1
+  register: dummy_exists
+
+- name: Setup Dummy interface
+  become: yes
+  delegate_to: localhost
+  shell: |
+    set -euo pipefail
+
+    ip netns exec {{ inventory_hostname }} ip link add \
+      name dummy \
+      type dummy
+
+    ip netns exec {{ inventory_hostname }} ip link set dev dummy up
+    ip netns exec {{ inventory_hostname }} ip addr add {{ bgp_ip }} dev dummy
+  args:
+    executable: /bin/bash
+  when: dummy_exists.changed

@@ -1,3 +1,7 @@
+- hosts: vpc
+  tasks:
+  - include_tasks: tasks/prepare_dummy_interface.yml
+
 - hosts: edge
   tasks:
   - include_tasks: tasks/peer_link.yml

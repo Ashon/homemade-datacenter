@@ -3,5 +3,5 @@
 docker-compose down -v
 
 for i in $(ip netns); do 
-  ip netns del $i
+  sudo ip netns del $i
 done

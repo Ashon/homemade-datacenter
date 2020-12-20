@@ -3,7 +3,7 @@
   delegate_to: localhost
   shell: |
     set -euo pipefail
-    ip netns exec {{ inventory_hostname }} ip link show dummy
+    ip netns exec {{ inventory_hostname }} ip link show lo0
   args:
     executable: /bin/bash
   failed_when: false
@@ -17,11 +17,11 @@
     set -euo pipefail
 
     ip netns exec {{ inventory_hostname }} ip link add \
-      name dummy \
+      name lo0 \
       type dummy
 
-    ip netns exec {{ inventory_hostname }} ip link set dev dummy up
-    ip netns exec {{ inventory_hostname }} ip addr add {{ bgp_ip }} dev dummy
+    ip netns exec {{ inventory_hostname }} ip link set dev lo0 up
+    ip netns exec {{ inventory_hostname }} ip addr add {{ bgp_ip }} dev lo0
   args:
     executable: /bin/bash
   when: dummy_exists.changed

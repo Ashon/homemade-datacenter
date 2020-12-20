@@ -1,18 +1,18 @@
 version: '3'
 
 services:
-  edge-0: &router
+  exit-0: &router
     image: bird-router
     build:
       context: containers/bird
     network_mode: none
-    container_name: edge-0
-    hostname: edge-0
+    container_name: exit-0
+    hostname: exit-0
     command: sh -c 'while true; do sleep 10; done'
-  edge-1:
+  exit-1:
     <<: *router
-    container_name: edge-1
-    hostname: edge-1
+    container_name: exit-1
+    hostname: exit-1
 
   spine-0:
     <<: *router

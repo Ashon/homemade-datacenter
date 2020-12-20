@@ -2,11 +2,11 @@
   tasks:
   - include_tasks: tasks/prepare_dummy_interface.yml
 
-- hosts: edge
+- hosts: exit
   tasks:
   - include_tasks: tasks/peer_link.yml
     vars:
-      peer_group: edge 
+      peer_group: exit 
   - include_tasks: tasks/link_hosts.yml
     vars:
       host_from: "{{ inventory_hostname }}"
@@ -22,7 +22,7 @@
     vars:
       host_from: "{{ inventory_hostname }}"
       host_to: "{{ item }}"
-    loop: "{{ groups['edge'] + groups['leaf'] }}"
+    loop: "{{ groups['exit'] + groups['leaf'] }}"
 
 - hosts: leaf
   tasks:

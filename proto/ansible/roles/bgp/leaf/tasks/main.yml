@@ -1,5 +1,0 @@
-- include_tasks: "{{ role_path }}/../base/tasks/prepare.yml"
-- include_tasks: "{{ role_path }}/../base/tasks/config.yml"
-  vars:
-    router_role: leaf
-- include_tasks: "{{ role_path }}/../base/tasks/deploy.yml"

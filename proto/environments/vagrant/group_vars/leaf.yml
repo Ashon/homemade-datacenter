@@ -1,4 +1,0 @@
-bgp:
-  debug: true
-  iface: eth1
-  ipv4_address: "{{ ansible_ssh_host }}"

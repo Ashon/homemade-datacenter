@@ -1,7 +1,0 @@
-- hosts: vpc:&spine
-  roles:
-  - bgp/spine
-
-- hosts: vpc:&leaf
-  roles:
-  - bgp/leaf

@@ -1,4 +1,0 @@
-ibgp:
-  asn: 65000
-  route_cidr: 10.100.0.0/24
-  password: secret

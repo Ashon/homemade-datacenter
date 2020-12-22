@@ -4,7 +4,7 @@
   when: not _footprints|default(false)
   run_once: yes
 
-- include_tasks: peer_link_inter.yml
+- include_tasks: peer_link_loop.yml
   loop: "{{ groups[peer_group] }}"
   loop_control:
     loop_var: host_from
